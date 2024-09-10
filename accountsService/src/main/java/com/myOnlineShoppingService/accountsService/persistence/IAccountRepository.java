@@ -13,7 +13,7 @@ import java.util.List;
 public interface IAccountRepository extends JpaRepository<Account, Long> {
 
     @Query("SELECT a FROM Account a WHERE a.owner.id = :id")
-    List<Account> getAccountFromCustomer(@Param("id") Long id);
+    List<Account> getAccountsFromCustomer(@Param("id") Long id);
 
     @Query("DELETE FROM Account a WHERE a.owner.id = :id")
     @Modifying

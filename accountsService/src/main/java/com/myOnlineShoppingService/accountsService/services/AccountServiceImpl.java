@@ -28,7 +28,7 @@ public class AccountServiceImpl implements IAccountService {
 
     @Override
     public List<Account> listAllFromCustomer(Long ownerId) {
-        return repo.getAccountFromCustomer(ownerId);
+        return repo.getAccountsFromCustomer(ownerId);
     }
 
     @Override
@@ -86,7 +86,7 @@ public class AccountServiceImpl implements IAccountService {
 
     @Override
     public boolean deleteAllAccountsFromCustomer(Long id) {
-        List<Account> accounts = repo.getAccountFromCustomer(id);
+        List<Account> accounts = repo.getAccountsFromCustomer(id);
         if (!accounts.isEmpty()) {
             repo.deleteAllAccountsFromCustomer(id);
             return true;

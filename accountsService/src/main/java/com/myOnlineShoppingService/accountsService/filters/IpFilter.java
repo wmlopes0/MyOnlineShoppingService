@@ -15,8 +15,8 @@ import java.util.List;
 public class IpFilter implements Filter {
 
     private static final List<String> ALLOWED_IPS = Arrays.asList(
-            "192.168.1.100",
-            "192.168.1.101");
+            "0.0.0.0.0.0.0.1",
+            "192.168.240.53");
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
