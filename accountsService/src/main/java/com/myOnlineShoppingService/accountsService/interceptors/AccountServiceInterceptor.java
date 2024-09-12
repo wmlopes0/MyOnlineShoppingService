@@ -20,12 +20,13 @@ public class AccountServiceInterceptor implements HandlerInterceptor {
         logger.info("Ruta solicitada: " + request.getRequestURI());
         logger.info("Parámetros de consulta: " + request.getQueryString());
         logger.info("IP de origen: " + request.getRemoteAddr());
+        response.addHeader("accounts-request-reviewed", "true");
         return true;
     }
 
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
-        response.addHeader("accounts-request-reviewed", "true");
+
     }
 
     @Override
