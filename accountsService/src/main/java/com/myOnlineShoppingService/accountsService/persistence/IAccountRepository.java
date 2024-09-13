@@ -12,10 +12,9 @@ import java.util.List;
 @Repository
 public interface IAccountRepository extends JpaRepository<Account, Long> {
 
-    @Query("SELECT a FROM Account a WHERE a.owner.id = :id")
-    List<Account> getAccountsFromCustomer(@Param("id") Long id);
-
     @Query("DELETE FROM Account a WHERE a.owner.id = :id")
     @Modifying
     void deleteAllAccountsFromCustomer(@Param("id") Long id);
+
+    List<Account> findByOwner_Id(Long ownerId);
 }
