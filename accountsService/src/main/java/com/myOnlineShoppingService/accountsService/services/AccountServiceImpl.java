@@ -22,8 +22,8 @@ public class AccountServiceImpl implements IAccountService {
     }
 
     @Override
-    public Account listOneAccount(Long id) {
-        return repo.findById(id).get();
+    public Optional<Account> getAccountById(Long id) {
+        return repo.findById(id);
     }
 
     @Override
@@ -85,7 +85,7 @@ public class AccountServiceImpl implements IAccountService {
     }
 
     @Override
-    public boolean deleteAllAccountsFromCustomer(Long id) {
+    public boolean deleteAccountsByOwner(Long id) {
         List<Account> accounts = repo.getAccountsFromCustomer(id);
         if (!accounts.isEmpty()) {
             repo.deleteAllAccountsFromCustomer(id);
