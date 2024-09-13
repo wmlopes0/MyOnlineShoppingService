@@ -4,6 +4,7 @@ import com.myOnlineShoppingService.accountsService.exception.AccountNotBelongToO
 import com.myOnlineShoppingService.accountsService.exception.AccountNotFoundException;
 import com.myOnlineShoppingService.accountsService.exception.CustomerNotFoundException;
 import com.myOnlineShoppingService.accountsService.models.Account;
+import com.myOnlineShoppingService.accountsService.models.AccountDTO;
 import com.myOnlineShoppingService.accountsService.models.Customer;
 import com.myOnlineShoppingService.accountsService.persistence.IAccountRepository;
 import com.myOnlineShoppingService.accountsService.persistence.ICustomerRepository;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class AccountServiceImpl implements IAccountService {
@@ -22,53 +24,73 @@ public class AccountServiceImpl implements IAccountService {
     @Autowired
     private ICustomerRepository repoCustomer;
 
+    @Autowired
+    private IAccountMapper accountMapper;
+
     @Override
-    public List<Account> listAll() {
-        return repoAccount.findAll();
+    public List<AccountDTO> listAll() {
+        return repoAccount.findAll().stream()
+                .map(accountMapper::mapToAccountDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Account findAccountByIdAndOwnerId(Long accountId, Long ownerId) {
+    public AccountDTO findAccountByIdAndOwnerId(Long accountId, Long ownerId) {
         Account account = repoAccount.findById(accountId)
                 .orElseThrow(() -> new AccountNotFoundException("Account with ID: " + accountId + " not found"));
 
         if (!account.getOwner().getId().equals(ownerId)) {
             throw new AccountNotBelongToOwnerException("Account with ID: " + accountId + " does not belong to owner with ID: " + ownerId);
         }
-        return account;
+        return accountMapper.mapToAccountDTO(account);
     }
 
     @Override
-    public List<Account> listByOwnerId(Long ownerId) {
-        return repoAccount.findByOwner_Id(ownerId);
+    public List<AccountDTO> listByOwnerId(Long ownerId) {
+        return repoAccount.findByOwner_Id(ownerId).stream()
+                .map(accountMapper::mapToAccountDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Optional<Account> getAccountById(Long id) {
-        return repoAccount.findById(id);
+    public Optional<AccountDTO> getAccountById(Long id) {
+        Optional<Account> optAccount = repoAccount.findById(id);
+        if (optAccount.isPresent()) {
+            AccountDTO accountDTO = accountMapper.mapToAccountDTO(optAccount.get());
+            return Optional.of(accountDTO);
+        } else {
+            return Optional.empty();
+        }
     }
 
     @Override
-    public List<Account> listAllFromCustomer(Long ownerId) {
-        return repoAccount.findByOwner_Id(ownerId);
+    public List<AccountDTO> listAllFromCustomer(Long ownerId) {
+        return repoAccount.findByOwner_Id(ownerId).stream()
+                .map(accountMapper::mapToAccountDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Account createAccount(Account newAccount) {
-        return repoAccount.save(newAccount);
+    public AccountDTO createAccount(AccountDTO newAccount) {
+        return accountMapper.mapToAccountDTO(
+                repoAccount.save(accountMapper.mapToAccount(newAccount)));
     }
 
     @Override
     @Transactional
-    public Account updateAccount(Account updateAccount) {
+    public AccountDTO updateAccount(AccountDTO updateAccount) {
         Optional<Account> accountDB = repoAccount.findById(updateAccount.getId());
-        if (!accountDB.isEmpty()) {
-            accountDB.get().setType(updateAccount.getType());
-            accountDB.get().setBalance(updateAccount.getBalance());
+        if (accountDB.isPresent()) {
+            Account accountToUpdate = accountDB.get();
+            accountToUpdate.setType(updateAccount.getType());
+            accountToUpdate.setBalance(updateAccount.getBalance());
+
+            Account updatedAccount = repoAccount.save(accountToUpdate);
+
+            return accountMapper.mapToAccountDTO(updatedAccount);
         } else {
-            throw new RuntimeException("La cuenta no existe");
+            throw new AccountNotFoundException("Account not exits.");
         }
-        return repoAccount.save(updateAccount);
     }
 
     @Override
@@ -83,20 +105,22 @@ public class AccountServiceImpl implements IAccountService {
     }
 
     @Override
-    public Account addMoney(Long accountId, int amount, Long ownerId) {
-        Account accountDB = findAccountByIdAndOwnerId(accountId, ownerId);
+    public AccountDTO addMoney(Long accountId, int amount, Long ownerId) {
+        AccountDTO accountDB = findAccountByIdAndOwnerId(accountId, ownerId);
         accountDB.setBalance(accountDB.getBalance() + amount);
-        return repoAccount.save(accountDB);
+        return accountMapper.mapToAccountDTO(repoAccount.save(accountMapper.mapToAccount(accountDB)));
     }
 
     @Override
-    public Account withdrawMoney(Long accountId, int amount, Long ownerId) {
-        Account accountDB = findAccountByIdAndOwnerId(accountId, ownerId);
-        accountDB.setBalance(accountDB.getBalance() - amount);
-        return repoAccount.save(accountDB);
+    public AccountDTO withdrawMoney(Long accountId, int amount, Long ownerId) {
+        AccountDTO accountDB = findAccountByIdAndOwnerId(accountId, ownerId);
+        repoAccount.withdrawFromAccounts(ownerId, amount);
+        return accountMapper.mapToAccountDTO(repoAccount.save(accountMapper.mapToAccount(accountDB)));
     }
 
+
     @Override
+    @Transactional
     public boolean deleteAccountsByOwner(Long id) {
         List<Account> accounts = repoAccount.findByOwner_Id(id);
         if (!accounts.isEmpty()) {

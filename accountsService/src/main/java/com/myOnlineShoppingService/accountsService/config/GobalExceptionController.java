@@ -3,6 +3,7 @@ package com.myOnlineShoppingService.accountsService.config;
 import com.myOnlineShoppingService.accountsService.exception.AccountNotBelongToOwnerException;
 import com.myOnlineShoppingService.accountsService.exception.AccountNotFoundException;
 import com.myOnlineShoppingService.accountsService.exception.CustomerNotFoundException;
+import com.myOnlineShoppingService.accountsService.exception.InsufficientFundsException;
 import com.myOnlineShoppingService.accountsService.models.StatusMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +31,13 @@ public class GobalExceptionController {
         StatusMessage statusMessage = new StatusMessage(HttpStatus.NOT_FOUND.value(), ex.getMessage());
         return new ResponseEntity<>(statusMessage, HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(InsufficientFundsException.class)
+    public ResponseEntity<StatusMessage> handleInsufficientFundsException(InsufficientFundsException ex) {
+        StatusMessage statusMessage = new StatusMessage(HttpStatus.PRECONDITION_FAILED.value(), ex.getMessage());
+        return new ResponseEntity<>(statusMessage, HttpStatus.PRECONDITION_FAILED);
+    }
+
 
     @ExceptionHandler(AccountNotBelongToOwnerException.class)
     public ResponseEntity<StatusMessage> handleAccountNotBelongToOwnerException(AccountNotBelongToOwnerException ex) {

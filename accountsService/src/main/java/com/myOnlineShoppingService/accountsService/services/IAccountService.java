@@ -1,30 +1,31 @@
 package com.myOnlineShoppingService.accountsService.services;
 
 import com.myOnlineShoppingService.accountsService.models.Account;
+import com.myOnlineShoppingService.accountsService.models.AccountDTO;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface IAccountService {
-    List<Account> listAll();
+    List<AccountDTO> listAll();
 
-    Account findAccountByIdAndOwnerId(Long accountId, Long ownerId);
+    AccountDTO findAccountByIdAndOwnerId(Long accountId, Long ownerId);
 
-    List<Account> listByOwnerId(Long ownerId);
+    List<AccountDTO> listByOwnerId(Long ownerId);
 
-    Optional<Account> getAccountById(Long id);
+    Optional<AccountDTO> getAccountById(Long id);
 
-    List<Account> listAllFromCustomer(Long ownerId);
+    List<AccountDTO> listAllFromCustomer(Long ownerId);
 
-    Account createAccount(Account newAccount);
+    AccountDTO createAccount(AccountDTO newAccount);
 
-    Account updateAccount(Account updateAccount);
+    AccountDTO updateAccount(AccountDTO updateAccount);
 
     boolean deleteAccount(Long id);
 
-    Account addMoney(Long accountId, int amount, Long ownerId);
+    AccountDTO addMoney(Long accountId, int amount, Long ownerId);
 
-    Account withdrawMoney(Long accountId, int amount, Long ownerId);
+    AccountDTO withdrawMoney(Long accountId, int amount, Long ownerId);
 
     boolean deleteAccountsByOwner(Long id);
 
