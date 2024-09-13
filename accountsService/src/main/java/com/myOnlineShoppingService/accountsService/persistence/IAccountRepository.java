@@ -20,6 +20,7 @@ public interface IAccountRepository extends JpaRepository<Account, Long> {
     List<Account> findByOwner_Id(Long ownerId);
 
     default void withdrawFromAccounts(Long ownerId, int amount) {
+        //NOS FALLA
         List<Account> accounts = findByOwner_Id(ownerId);
         int totalBalance = accounts.stream().mapToInt(Account::getBalance).sum();
 
