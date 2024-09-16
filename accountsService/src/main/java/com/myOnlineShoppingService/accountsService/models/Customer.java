@@ -1,6 +1,7 @@
 package com.myOnlineShoppingService.accountsService.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,6 +17,7 @@ import java.util.List;
 @Accessors(chain = true)
 @Entity
 @Table(name = "customers")
+@Schema(name = "Model of Customer", description = "Represents an customer")
 public class Customer {
 
     @Id

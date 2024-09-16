@@ -1,5 +1,6 @@
 package com.myOnlineShoppingService.accountsService.models;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,6 +14,7 @@ import javax.persistence.*;
 @Accessors(chain = true)
 @Entity
 @Table(name = "accounts")
+@Schema(name = "Model of Account", description = "Represents an account")
 public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

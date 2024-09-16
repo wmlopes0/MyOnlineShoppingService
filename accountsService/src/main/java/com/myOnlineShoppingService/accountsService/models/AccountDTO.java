@@ -1,5 +1,6 @@
 package com.myOnlineShoppingService.accountsService.models;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,6 +11,7 @@ import javax.validation.constraints.Pattern;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
+@Schema(name = "Model of Account for customer", description = "Represents an accountDTO")
 public class AccountDTO {
 
     private Long id;

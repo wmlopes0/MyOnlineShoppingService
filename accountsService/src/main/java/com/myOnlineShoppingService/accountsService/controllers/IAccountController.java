@@ -2,8 +2,10 @@ package com.myOnlineShoppingService.accountsService.controllers;
 
 import com.myOnlineShoppingService.accountsService.models.AccountDTO;
 import com.myOnlineShoppingService.accountsService.models.StatusMessage;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -17,6 +19,8 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RequestMapping(value = "/accounts", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@OpenAPIDefinition(info = @Info(title = "API of Equipo A", version = "1.0",
+    description = "This is Team A's first Spring Boot API, a simple example with crud operations and Swagger documentation."))
 @Tag(name = "Account API", description = "API for managing user accounts")
 public interface IAccountController {
 

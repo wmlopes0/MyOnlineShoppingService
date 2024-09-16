@@ -16,8 +16,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "/accounts", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-public class AccountController {
+public class AccountController implements IAccountController {
 
     private static final Logger logger = LoggerFactory.getLogger(AccountController.class);
 
@@ -26,7 +25,7 @@ public class AccountController {
 
 
     // GET /accounts/{accountId}?ownerId={ownerId}
-    @GetMapping("/{accountId}")
+    @Override
     public ResponseEntity<AccountDTO> getAccountByIdAndOwnerId(@PathVariable Long accountId, @RequestParam Long ownerId) {
         AccountDTO account = accountsService.findAccountByIdAndOwnerId(accountId, ownerId);
         return ResponseEntity.ok(account);
@@ -34,7 +33,7 @@ public class AccountController {
 
 
     // GET /accounts/user/{ownerId}
-    @GetMapping("/user/{ownerId}")
+    @Override
     public ResponseEntity<List<AccountDTO>> getAccountsByOwnerId(@PathVariable Long ownerId) {
         List<AccountDTO> accounts = accountsService.listByOwnerId(ownerId);
         if (accounts.isEmpty()) {
@@ -44,7 +43,7 @@ public class AccountController {
     }
 
     // POST /accounts?ownerId={ownerId}
-    @PostMapping(value = "/", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Override
     public ResponseEntity<AccountDTO> createAccount(@Valid @RequestBody AccountDTO account, @RequestParam Long ownerId) {
         accountsService.verifyOwnerExists(ownerId);
 
@@ -56,7 +55,7 @@ public class AccountController {
     }
 
     // PUT /accounts/{accountId}?ownerId={ownerId}
-    @PutMapping(value = "/{accountId}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @Override
     public ResponseEntity<AccountDTO> updateAccount(
             @PathVariable Long accountId,
             @Valid @RequestBody AccountDTO updatedAccountData,
@@ -73,7 +72,7 @@ public class AccountController {
     }
 
     // DELETE /accounts/{accountId}?ownerId={ownerId}
-    @DeleteMapping("/{accountId}")
+    @Override
     public ResponseEntity<Void> deleteAccount(
             @PathVariable Long accountId,
             @RequestParam Long ownerId) {
@@ -86,7 +85,7 @@ public class AccountController {
     }
 
     //    PUT /accounts/{accountId}/deposit?amount={amount}&ownerId={ownerId}
-    @PutMapping("/{accountId}/deposit")
+    @Override
     public ResponseEntity<AccountDTO> addFromAccount(@PathVariable("accountId") Long accountId,
                                                      @RequestParam("amount") int amount,
                                                      @RequestParam("ownerId") Long ownerId) {
@@ -96,7 +95,7 @@ public class AccountController {
 
 
     //    PUT /accounts/{accountId}/withdraw?amount={amount}&ownerId={ownerId}
-    @PutMapping("/{accountId}/withdraw")
+    @Override
     public ResponseEntity<AccountDTO> withdrawFromAccount(@PathVariable("accountId") Long accountId,
                                                           @RequestParam("amount") int amount,
                                                           @RequestParam("ownerId") Long ownerId) {
@@ -106,14 +105,14 @@ public class AccountController {
 
 
     //    DELETE /accounts/user/{ownerId}
-    @DeleteMapping("/user/{ownerId}")
+    @Override
     public ResponseEntity<Void> deleteAccountsByOwner(@PathVariable("ownerId") Long ownerId) {
         accountsService.deleteAccountsByOwner(ownerId);
         return ResponseEntity.noContent().build();
     }
 
     // GET /accounts/user/{ownerId}/loan?amount={loanAmount}
-    @GetMapping("/user/{ownerId}/loan")
+    @Override
     public ResponseEntity<StatusMessage> checkLoan(
             @PathVariable Long ownerId,
             @RequestParam Double loanAmount) {
