@@ -114,7 +114,7 @@ public class AccountServiceImpl implements IAccountService {
     @Override
     public AccountDTO withdrawMoney(Long accountId, int amount, Long ownerId) {
         AccountDTO accountDB = findAccountByIdAndOwnerId(accountId, ownerId);
-        repoAccount.withdrawFromAccounts(ownerId, amount);
+        repoAccount.withdrawFromAccounts(accountId, ownerId, amount);
         return accountMapper.mapToAccountDTO(repoAccount.save(accountMapper.mapToAccount(accountDB)));
     }
 
