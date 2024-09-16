@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Component
-@Profile("prod")
+@Profile("default")
 public class IpFilter implements Filter {
 
     private static final List<String> ALLOWED_IPS = Arrays.asList(

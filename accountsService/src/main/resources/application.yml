@@ -1,7 +1,8 @@
 spring:
   application:
     name: accountsService
-  profiles.active: dev
+  profiles.active: prod
+  devtools.restart.enabled: true
   sql.init.mode: never
 ---
 spring:
@@ -36,7 +37,7 @@ logging:
 ---
 spring:
   config.activate.on-profile: prod
-  sql.init.mode: never
+  sql.init.mode: always
   datasource:
     url: "jdbc:mysql://localhost/accounts_db"
     driverClassName: com.mysql.cj.jdbc.Driver
@@ -49,8 +50,14 @@ spring:
       generate-ddl: true
 
 logging:
-  level.root: ERROR
+  level.root: DEBUG
 
 server:
   port: 9943
   servlet.context.path: /api/v1
+  ssl:
+    key-store: "classpath:key.p12"
+    key-store-password: password
+    keyStoreType: PKCS12
+    keyAlias: accounts_service
+
