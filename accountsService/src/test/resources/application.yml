@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: accountsService
+  profiles.active: test
+  sql.init.mode: never
+  devtools.restart.enabled: true
+  datasource:
+    url: "jdbc:h2:mem:accountsServicedb"
+    driverClassName: org.h2.Driver
+    username: root
+    password: root
+  jpa:
+    show-sql: true
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+      generate-ddl: true
+    defer-datasource-initialization: true
+  h2:
+    console.enabled: true
+    console.path: /h2-ui
+
+server:
+  port: 8080
+
+---
+spring:
+  config.activate.on-profile: test
+
+server:
+  error:
+     include-message: always
+     include-binding-errors: always
+     include-stacktrace: on-param
+     include-exception: false
