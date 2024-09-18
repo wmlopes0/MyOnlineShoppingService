@@ -10,12 +10,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
-import javax.persistence.EntityNotFoundException;
+import javax.persistence.EntityManager;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 class IAccountRepositoryTest {
@@ -24,34 +23,36 @@ class IAccountRepositoryTest {
 
     @Autowired
     ICustomerRepository customerRepository;
+    @Autowired
+    EntityManager entityManager;
 
     @BeforeEach
     void init() {
         Customer customer1 = new Customer()
-                .setId(1L)
+                .setId(null)
                 .setName("Customer1")
                 .setEmail("Email1");
         Customer customer2 = new Customer()
-                .setId(2L)
+                .setId(null)
                 .setName("Customer2")
                 .setEmail("Email2");
         Account account1 = new Account()
-                .setId(1L)
+                .setId(null)
                 .setOwner(customer1)
                 .setType("Personal")
                 .setBalance(1500);
         Account account2 = new Account()
-                .setId(2L)
+                .setId(null)
                 .setOwner(customer1)
                 .setType("Company")
                 .setBalance(1500);
         Account account3 = new Account()
-                .setId(3L)
+                .setId(null)
                 .setOwner(customer2)
                 .setType("Personal")
                 .setBalance(1500);
         Account account4 = new Account()
-                .setId(4L)
+                .setId(null)
                 .setOwner(customer2)
                 .setType("Personal")
                 .setBalance(1000);
@@ -68,7 +69,10 @@ class IAccountRepositoryTest {
     void finish() {
         accountRepository.deleteAll();
         customerRepository.deleteAll();
+        entityManager.createNativeQuery("ALTER TABLE accounts ALTER COLUMN id RESTART WITH 1").executeUpdate();
+        entityManager.createNativeQuery("ALTER TABLE customers ALTER COLUMN id RESTART WITH 1").executeUpdate();
     }
+
 
     @Test
     @DisplayName("Prueba positiva de findByOwner_Id")
