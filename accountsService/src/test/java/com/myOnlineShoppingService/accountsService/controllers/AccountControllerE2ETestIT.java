@@ -17,6 +17,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
+import javax.persistence.EntityManager;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -36,30 +38,30 @@ class AccountControllerE2ETestIT {
     @BeforeEach
     void init() {
         Customer customer1 = new Customer()
-                .setId(1L)
+                .setId(null)
                 .setName("Customer1")
                 .setEmail("Email1");
         Customer customer2 = new Customer()
-                .setId(2L)
+                .setId(null)
                 .setName("Customer2")
                 .setEmail("Email2");
         Account account1 = new Account()
-                .setId(1L)
+                .setId(null)
                 .setOwner(customer1)
                 .setType("Personal")
                 .setBalance(1500);
         Account account2 = new Account()
-                .setId(2L)
+                .setId(null)
                 .setOwner(customer1)
                 .setType("Company")
                 .setBalance(1500);
         Account account3 = new Account()
-                .setId(3L)
+                .setId(null)
                 .setOwner(customer2)
                 .setType("Personal")
                 .setBalance(1500);
         Account account4 = new Account()
-                .setId(4L)
+                .setId(null)
                 .setOwner(customer2)
                 .setType("Personal")
                 .setBalance(1000);
@@ -75,6 +77,7 @@ class AccountControllerE2ETestIT {
     @AfterEach
     void finish() {
         accountRepository.deleteAll();
+        customerRepository.deleteAll();
     }
 
     @Test
@@ -110,36 +113,4 @@ class AccountControllerE2ETestIT {
                 .andExpect(status().isNotFound());
     }
 
-
-    @Test
-    void getAccountsByOwnerId() {
-    }
-
-    @Test
-    void createAccount() {
-    }
-
-    @Test
-    void updateAccount() {
-    }
-
-    @Test
-    void deleteAccount() {
-    }
-
-    @Test
-    void addFromAccount() {
-    }
-
-    @Test
-    void withdrawFromAccount() {
-    }
-
-    @Test
-    void deleteAccountsByOwner() {
-    }
-
-    @Test
-    void checkLoan() {
-    }
 }
