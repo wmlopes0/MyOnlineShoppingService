@@ -6,14 +6,12 @@ import com.myOnlineShoppingService.accountsService.models.Customer;
 import com.myOnlineShoppingService.accountsService.persistence.IAccountRepository;
 import com.myOnlineShoppingService.accountsService.persistence.ICustomerRepository;
 import com.myOnlineShoppingService.accountsService.util.JsonUtil;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
@@ -21,9 +19,11 @@ import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
+
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
-class AccountControllerTest {
+@ActiveProfiles("test")
+class AccountControllerMockMvcTest {
     @Autowired
     private MockMvc mockMvc;
 
@@ -109,8 +109,8 @@ class AccountControllerTest {
         String accountJson = JsonUtil.mapToJson(account);
 
 
-        mockMvc.perform(post("/accounts")
-                        .param("ownerId", "5")
+        mockMvc.perform(post("/accounts/")
+                        .param("ownerId", "2")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(accountJson).accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
@@ -125,20 +125,17 @@ class AccountControllerTest {
     @Test
     @DisplayName("Prueba negativa de createAccount")
     void createAccount_NegativeTest() throws Exception {
-        Customer customer5 = new Customer()
+        AccountDTO invalidAccount = new AccountDTO()
                 .setId(5L)
-                .setName("Customer5")
-                .setEmail("Email5");
-        customerRepository.save(customer5);
-
-        Account invalidAccount = new Account()
-                .setBalance(-500);
+                .setType("Fail")
+                .setBalance(5500)
+                .setOwner_id(2L);
 
         String invalidAccountJson = JsonUtil.mapToJson(invalidAccount);
 
 
-        mockMvc.perform(post("/accounts")
-                        .param("ownerId", "5")
+        mockMvc.perform(post("/accounts/")
+                        .param("ownerId", "2")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(invalidAccountJson))
                 .andExpect(status().isPreconditionFailed());
@@ -148,56 +145,39 @@ class AccountControllerTest {
     @Test
     @DisplayName("Prueba positiva de updateAccount")
     void updateAccount_PositiveTest() throws Exception {
-        Customer customer6 = new Customer()
-                .setId(6L)
-                .setName("Customer6")
-                .setEmail("Email6");
-        customerRepository.save(customer6);
-
-        Account account9 = new Account()
-                .setId(9L)
-                .setOwner(customer6)
-                .setType("Personal")
-                .setBalance(500);
-        accountRepository.save(account9);
-
-        Account updatedAccount = new Account()
-                .setType("Business")
+        AccountDTO updatedAccount = new AccountDTO()
+                .setOwner_id(2L)
+                .setType("Company")
                 .setBalance(2000);
 
         String updatedAccountJson = JsonUtil.mapToJson(updatedAccount);
 
 
-        mockMvc.perform(put("/accounts/9")
-                        .param("ownerId", "6")
+        mockMvc.perform(put("/accounts/3")
+                        .param("ownerId", "2")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updatedAccountJson))
                 .andExpect(status().isAccepted())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id", is(9)))
-                .andExpect(jsonPath("$.type", is("Business")))
-                .andExpect(jsonPath("$.balance", is(2000.0)))
-                .andExpect(jsonPath("$.owner.id", is(6)));
+                .andExpect(jsonPath("$.id", is(3)))
+                .andExpect(jsonPath("$.type", is("Company")))
+                .andExpect(jsonPath("$.balance", is(2000)))
+                .andExpect(jsonPath("$.owner_id", is(2)));
     }
 
     @Test
     @DisplayName("Prueba negativa de updateAccount")
     void updateAccount_NegativeTest() throws Exception {
-        Customer customer6 = new Customer()
-                .setId(6L)
-                .setName("Customer6")
-                .setEmail("Email6");
-        customerRepository.save(customer6);
-
-        Account updatedAccount = new Account()
-                .setType("Business")
+        AccountDTO updatedAccount = new AccountDTO()
+                .setOwner_id(2L)
+                .setType("Personal")
                 .setBalance(2000);
 
         String updatedAccountJson = JsonUtil.mapToJson(updatedAccount);
 
 
         mockMvc.perform(put("/accounts/9")
-                        .param("ownerId", "6")
+                        .param("ownerId", "2")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updatedAccountJson))
                 .andExpect(status().isNotFound());
@@ -206,37 +186,16 @@ class AccountControllerTest {
     @Test
     @DisplayName("Prueba positiva de deleteAccount")
     void deleteAccount_PositiveTest() throws Exception {
-        Customer customer7 = new Customer()
-                .setId(7L)
-                .setName("Customer7")
-                .setEmail("Email7");
-        customerRepository.save(customer7);
-
-        Account account10 = new Account()
-                .setId(10L)
-                .setOwner(customer7)
-                .setType("Personal")
-                .setBalance(1000);
-        accountRepository.save(account10);
-
-
-        mockMvc.perform(delete("/accounts/10")
-                        .param("ownerId", "7"))
+        mockMvc.perform(delete("/accounts/2")
+                        .param("ownerId", "1"))
                 .andExpect(status().isNoContent());
     }
 
     @Test
     @DisplayName("Prueba negativa de deleteAccount")
     void deleteAccount_NegativeTest() throws Exception {
-        Customer customer7 = new Customer()
-                .setId(7L)
-                .setName("Customer7")
-                .setEmail("Email7");
-        customerRepository.save(customer7);
-
-
-        mockMvc.perform(delete("/accounts/10")
-                        .param("ownerId", "7"))
+        mockMvc.perform(delete("/accounts/15")
+                        .param("ownerId", "2"))
                 .andExpect(status().isNotFound());
     }
 }
