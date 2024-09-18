@@ -1,5 +1,7 @@
 package com.myOnlineShoppingService.accountsService.controllers;
 
+import com.myOnlineShoppingService.accountsService.exception.AccountNotBelongToOwnerException;
+import com.myOnlineShoppingService.accountsService.exception.AccountNotFoundException;
 import com.myOnlineShoppingService.accountsService.models.Account;
 import com.myOnlineShoppingService.accountsService.models.AccountDTO;
 import com.myOnlineShoppingService.accountsService.models.Customer;
@@ -8,11 +10,11 @@ import com.myOnlineShoppingService.accountsService.persistence.ICustomerReposito
 import com.myOnlineShoppingService.accountsService.services.IAccountMapper;
 import com.myOnlineShoppingService.accountsService.services.IAccountService;
 import com.myOnlineShoppingService.accountsService.util.JsonUtil;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -21,7 +23,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
 import java.util.Optional;
 
-import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
@@ -148,6 +149,8 @@ public class AccountControllerWebMvcTest {
     @Test
     @DisplayName("Prueba negativa de getAccountByIdAndOwnerId")
     void getAccountByIdAndOwnerId_NegativeTest() throws Exception {
+        when(accountsService.findAccountByIdAndOwnerId(4L, 3L))
+                .thenThrow(new AccountNotBelongToOwnerException("Account does not belong to owner"));
 
         mockMvc.perform(get("/accounts/4")
                         .param("ownerId", "3"))
@@ -157,14 +160,21 @@ public class AccountControllerWebMvcTest {
     @Test
     @DisplayName("Prueba positiva de createAccount")
     void createAccount_PositiveTest() throws Exception {
-        AccountDTO account = new AccountDTO()
+        AccountDTO newAccountDTO = new AccountDTO()
+                .setType("Personal")
+                .setBalance(1000)
+                .setOwner_id(2L);
+
+
+        AccountDTO createdAccountDTO = new AccountDTO()
                 .setId(5L)
                 .setType("Personal")
                 .setBalance(1000)
                 .setOwner_id(2L);
 
-        String accountJson = JsonUtil.mapToJson(account);
+        String accountJson = JsonUtil.mapToJson(newAccountDTO);
 
+        when(accountsService.createAccount(newAccountDTO)).thenReturn(createdAccountDTO);
 
         mockMvc.perform(post("/accounts/")
                         .param("ownerId", "2")
@@ -189,7 +199,8 @@ public class AccountControllerWebMvcTest {
                 .setOwner_id(2L);
 
         String invalidAccountJson = JsonUtil.mapToJson(invalidAccount);
-
+        when(accountsService.createAccount(invalidAccount))
+                .thenThrow(new RuntimeException());
 
         mockMvc.perform(post("/accounts/")
                         .param("ownerId", "2")
@@ -203,12 +214,14 @@ public class AccountControllerWebMvcTest {
     @DisplayName("Prueba positiva de updateAccount")
     void updateAccount_PositiveTest() throws Exception {
         AccountDTO updatedAccount = new AccountDTO()
+                .setId(3L)
                 .setOwner_id(2L)
                 .setType("Company")
                 .setBalance(2000);
 
         String updatedAccountJson = JsonUtil.mapToJson(updatedAccount);
 
+        when(accountsService.updateAccount(updatedAccount)).thenReturn(updatedAccount);
 
         mockMvc.perform(put("/accounts/3")
                         .param("ownerId", "2")
@@ -226,12 +239,14 @@ public class AccountControllerWebMvcTest {
     @DisplayName("Prueba negativa de updateAccount")
     void updateAccount_NegativeTest() throws Exception {
         AccountDTO updatedAccount = new AccountDTO()
+                .setId(3L)
                 .setOwner_id(2L)
                 .setType("Personal")
                 .setBalance(2000);
 
         String updatedAccountJson = JsonUtil.mapToJson(updatedAccount);
-
+        when(accountsService.updateAccount(updatedAccount))
+                .thenThrow(new AccountNotFoundException("Account not found"));
 
         mockMvc.perform(put("/accounts/9")
                         .param("ownerId", "2")
@@ -243,6 +258,15 @@ public class AccountControllerWebMvcTest {
     @Test
     @DisplayName("Prueba positiva de deleteAccount")
     void deleteAccount_PositiveTest() throws Exception {
+        AccountDTO existingAccount = new AccountDTO()
+                .setId(2L)
+                .setOwner_id(1L)
+                .setType("Personal")
+                .setBalance(1000);
+
+        when(accountsService.findAccountByIdAndOwnerId(2L, 1L)).thenReturn(existingAccount);
+        when(accountsService.deleteAccount(2L)).thenReturn(true);
+
         mockMvc.perform(delete("/accounts/2")
                         .param("ownerId", "1"))
                 .andExpect(status().isNoContent());
@@ -251,6 +275,9 @@ public class AccountControllerWebMvcTest {
     @Test
     @DisplayName("Prueba negativa de deleteAccount")
     void deleteAccount_NegativeTest() throws Exception {
+        when(accountsService.findAccountByIdAndOwnerId(15L, 2L))
+                .thenThrow(new AccountNotFoundException("Account not found"));
+
         mockMvc.perform(delete("/accounts/15")
                         .param("ownerId", "2"))
                 .andExpect(status().isNotFound());
