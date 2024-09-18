@@ -2,6 +2,8 @@ package com.myOnlineShoppingService.accountsService.services;
 
 import com.myOnlineShoppingService.accountsService.controllers.IAccountController;
 import com.myOnlineShoppingService.accountsService.models.AccountDTO;
+import com.myOnlineShoppingService.accountsService.models.Customer;
+import com.myOnlineShoppingService.accountsService.persistence.ICustomerRepository;
 import net.minidev.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +17,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class AccountServiceIntegrationTest {
-    @LocalServerPort
+        @LocalServerPort
     private int port;
     @Autowired
     private TestRestTemplate restTemplate;
+    @Autowired
+    private ICustomerRepository customerRepository;
 
     private String getBaseUrl() {
         return "http://localhost:" + port;
@@ -36,7 +40,8 @@ public class AccountServiceIntegrationTest {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
         HttpEntity<AccountDTO> request = new HttpEntity<>(accountDTO, headers);
-
+        Customer cust1= new Customer(1L,"ejemplo", "ejemplo@email.com");
+        customerRepository.save(cust1);
         // When
         ResponseEntity<AccountDTO> response = restTemplate.exchange(url, HttpMethod.POST, request, AccountDTO.class);
 
