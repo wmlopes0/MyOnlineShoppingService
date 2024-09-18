@@ -91,12 +91,6 @@ class IAccountRepositoryTest {
         List<Account> accounts = accountRepository.findByOwner_Id(nonExistentCustomerId);
 
         assertThat(accounts, is(empty()));
-
-        Exception exception = org.junit.jupiter.api.Assertions.assertThrows(EntityNotFoundException.class, () -> {
-            accountRepository.findByOwner_Id(nonExistentCustomerId);
-        });
-
-        assertThat(exception.getMessage(), containsString("No se encontró el cliente con ID 50"));
     }
 
     @Test
