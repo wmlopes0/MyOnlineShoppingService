@@ -1,7 +1,7 @@
 spring:
   application:
     name: accountsService
-  profiles.active: prod
+  profiles.active: dev
   devtools.restart.enabled: true
   sql.init.mode: never
 
