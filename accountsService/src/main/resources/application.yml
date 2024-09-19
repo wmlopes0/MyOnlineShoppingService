@@ -4,6 +4,8 @@ spring:
   profiles.active: prod
   devtools.restart.enabled: true
   sql.init.mode: never
+
+  app.jwt.secret: SECRET-KEY-VALUE
 ---
 spring:
   config.activate.on-profile: dev
