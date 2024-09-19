@@ -1,7 +1,6 @@
 package com.myOnlineShoppingService.accountsService.controllers;
 
 import com.myOnlineShoppingService.accountsService.models.Account;
-import com.myOnlineShoppingService.accountsService.models.AccountDTO;
 import com.myOnlineShoppingService.accountsService.models.Customer;
 import com.myOnlineShoppingService.accountsService.persistence.IAccountRepository;
 import com.myOnlineShoppingService.accountsService.persistence.ICustomerRepository;
@@ -13,18 +12,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Arrays;
-import java.util.List;
-
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
+import static org.hamcrest.Matchers.is;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -35,20 +29,17 @@ public class AccountControllerIntegrationTest {
 
     @Autowired
     private IAccountController iAccountController;
-
     @Autowired
     private IAccountService iAccountService;
-
     @Autowired
     private ICustomerRepository customerRepository;
-
     @Autowired
     private IAccountRepository accountRepository;
 
     @BeforeEach
     void init() {
         Customer customer1 = new Customer()
-                .setId(9L)
+                .setId(1L)
                 .setName("Customer1")
                 .setEmail("Email1");
         Customer customer2 = new Customer()
@@ -67,12 +58,12 @@ public class AccountControllerIntegrationTest {
                 .setBalance(1500);
         Account account3 = new Account()
                 .setId(3L)
-                .setOwner(customer1)
+                .setOwner(customer2)
                 .setType("Personal")
                 .setBalance(1500);
         Account account4 = new Account()
                 .setId(4L)
-                .setOwner(customer1)
+                .setOwner(customer2)
                 .setType("Personal")
                 .setBalance(1000);
 
@@ -93,17 +84,13 @@ public class AccountControllerIntegrationTest {
 
     @Test
     @DisplayName("Obtener cuentas de cliente")
-    public void getAccountsByClient() {
-        Long ownerId = 9L;
-        List<AccountDTO> expectedAccounts = Arrays.asList(
-                new AccountDTO(3L, "Personal", 1500, 9L),
-                new AccountDTO(4L, "Personal", 1000, 9L)
-        );
+    public void getAccountsByClient() throws Exception {
+        Long ownerId = 1L;
 
-        ResponseEntity<List<AccountDTO>> response = iAccountController.getAccountsByOwnerId(ownerId);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(expectedAccounts, response.getBody());
-
+        mockMvc.perform(get("/accounts/user/" + ownerId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].owner_id", is(ownerId.intValue())))
+                .andExpect(jsonPath("$[0].type", is("Personal")))
+                .andExpect(jsonPath("$[0].balance", is(1500)));
     }
 }
