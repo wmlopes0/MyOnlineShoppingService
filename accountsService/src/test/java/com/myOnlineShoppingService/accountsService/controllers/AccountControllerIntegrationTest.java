@@ -1,10 +1,13 @@
 package com.myOnlineShoppingService.accountsService.controllers;
 
+
 import com.myOnlineShoppingService.accountsService.models.Account;
+import com.myOnlineShoppingService.accountsService.models.AccountDTO;
 import com.myOnlineShoppingService.accountsService.models.Customer;
 import com.myOnlineShoppingService.accountsService.persistence.IAccountRepository;
 import com.myOnlineShoppingService.accountsService.persistence.ICustomerRepository;
 import com.myOnlineShoppingService.accountsService.services.IAccountService;
+import com.myOnlineShoppingService.accountsService.util.JsonUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -12,11 +15,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -92,5 +97,19 @@ public class AccountControllerIntegrationTest {
                 .andExpect(jsonPath("$[0].owner_id", is(ownerId.intValue())))
                 .andExpect(jsonPath("$[0].type", is("Personal")))
                 .andExpect(jsonPath("$[0].balance", is(1500)));
+    }
+
+    @Test
+    @DisplayName("Crear cuenta para cliente no existente")
+    public void createAccountForInvalidCustomer() throws Exception {
+
+        AccountDTO account = new AccountDTO(10L, "Personal", 15000, 999L);
+        String accountJSON = JsonUtil.mapToJson(account);
+
+
+        mockMvc.perform(post("/accounts/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(accountJSON))
+                .andExpect(status().isBadRequest());
     }
 }
