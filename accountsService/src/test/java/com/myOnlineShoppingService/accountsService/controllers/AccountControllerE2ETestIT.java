@@ -2,22 +2,19 @@ package com.myOnlineShoppingService.accountsService.controllers;
 
 
 import com.myOnlineShoppingService.accountsService.AccountsServiceApplication;
+import com.myOnlineShoppingService.accountsService.controllers.abstrac.AbstractIntegrationTest;
 import com.myOnlineShoppingService.accountsService.models.Account;
 import com.myOnlineShoppingService.accountsService.models.Customer;
 import com.myOnlineShoppingService.accountsService.persistence.IAccountRepository;
 import com.myOnlineShoppingService.accountsService.persistence.ICustomerRepository;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
-
-import javax.persistence.EntityManager;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -25,7 +22,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(classes = AccountsServiceApplication.class, properties = {"spring.profiles.active = test"})
 @AutoConfigureMockMvc
-class AccountControllerE2ETestIT {
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+class AccountControllerE2ETestIT extends AbstractIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -34,8 +32,18 @@ class AccountControllerE2ETestIT {
     private IAccountRepository accountRepository;
     @Autowired
     private ICustomerRepository customerRepository;
+    private final String email = "director@director.com";
+    private final String pass = "director";
 
-    @BeforeEach
+    private HttpHeaders headers;
+
+
+    @BeforeAll
+    void first() throws Exception {
+        headers = createHeaders(email, pass);
+    }
+
+    @BeforeAll
     void init() {
         Customer customer1 = new Customer()
                 .setId(null)
@@ -74,11 +82,7 @@ class AccountControllerE2ETestIT {
         accountRepository.save(account4);
     }
 
-    @AfterEach
-    void finish() {
-        accountRepository.deleteAll();
-        customerRepository.deleteAll();
-    }
+
 
     @Test
     @DisplayName("Test para obtener una cuenta por ID y OwnerID")
@@ -90,6 +94,7 @@ class AccountControllerE2ETestIT {
                         .param("ownerId", String.valueOf(ownerId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
+                        .headers(headers)
                 )
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
@@ -103,11 +108,12 @@ class AccountControllerE2ETestIT {
     void getNonExistentAccountByIdAndOwnerId() throws Exception {
         Long accountId = 999L;
         Long ownerId = 1L;
-
         mockMvc.perform(get("/accounts/{accountId}", accountId)
                         .param("ownerId", String.valueOf(ownerId))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
+                        .headers(headers)
+
                 )
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isNotFound());
