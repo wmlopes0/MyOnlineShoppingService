@@ -2,7 +2,7 @@ spring:
   application:
     name: accountsService
   profiles.active: test
-  sql.init.mode: always
+  sql.init.mode: never
   devtools.restart.enabled: true
   datasource:
     url: "jdbc:h2:mem:accountsServicedb"
