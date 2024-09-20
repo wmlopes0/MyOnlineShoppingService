@@ -71,7 +71,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
         // Crea un usuario de Spring Security con el rol y el email extraídos del token
         UserDetails userDetails = new User(email, "psw",
-                List.of(new SimpleGrantedAuthority("ROLE_" + role)));
+                List.of(new SimpleGrantedAuthority(role)));
 
         // Crea el token de autenticación
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(

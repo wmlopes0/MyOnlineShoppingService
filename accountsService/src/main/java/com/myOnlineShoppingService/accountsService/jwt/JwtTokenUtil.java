@@ -59,7 +59,7 @@ public class JwtTokenUtil {
     // Extrae el rol del usuario del token JWT
     public String getRole(String token) {
         List<String> roles = getClaims(token).get("roles", List.class);  // Extraer la lista de roles
-        return roles != null && !roles.isEmpty() ? roles.get(0) : null;
+        return roles != null && !roles.isEmpty() ? roles.get(0).replace("ROLE_","") : null;
     }
 
     // Extrae los claims (reclamaciones) del token JWT

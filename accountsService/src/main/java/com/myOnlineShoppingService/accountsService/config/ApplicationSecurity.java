@@ -33,13 +33,14 @@ public class ApplicationSecurity {
     public UserDetailsService userDetailsService() {
         UserDetails cajero = User.withUsername("cajero@cajero.com")
                 .password(passwordEncoder().encode("cajero"))
-                .roles(ERole.CAJERO.name())
+                .roles(ERole.CAJERO.name().toString())
                 .build();
 
         UserDetails director = User.withUsername("directo@director.com")
                 .password(passwordEncoder().encode("director"))
-                .roles(ERole.DIRECTOR.name())
+                .roles(ERole.DIRECTOR.name().toString())
                 .build();
+
 
         return new InMemoryUserDetailsManager(cajero, director);
     }
@@ -60,8 +61,8 @@ public class ApplicationSecurity {
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests((requests) -> requests
                         .antMatchers("/auth/login", "/docs/**", "/swagger-ui/**").permitAll()
-                        .antMatchers(HttpMethod.GET, "/accounts/**").hasRole(ERole.CAJERO.name()) // Cajeros pueden leer datos de cuentas
-                        .antMatchers("/accounts/**").hasRole(ERole.DIRECTOR.name()) // Directores pueden realizar todas las acciones
+                        .antMatchers(HttpMethod.GET, "/accounts/**").hasAuthority(ERole.CAJERO.name()) // Cajeros pueden leer datos de cuentas
+                        .antMatchers("/accounts/**").hasAuthority(ERole.DIRECTOR.name()) // Directores pueden realizar todas las acciones
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling((exception) -> exception.authenticationEntryPoint(
