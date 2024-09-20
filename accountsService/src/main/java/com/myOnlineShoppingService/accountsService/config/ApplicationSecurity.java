@@ -36,7 +36,7 @@ public class ApplicationSecurity {
                 .roles(ERole.CAJERO.name().toString())
                 .build();
 
-        UserDetails director = User.withUsername("directo@director.com")
+        UserDetails director = User.withUsername("director@director.com")
                 .password(passwordEncoder().encode("director"))
                 .roles(ERole.DIRECTOR.name().toString())
                 .build();
@@ -61,7 +61,7 @@ public class ApplicationSecurity {
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests((requests) -> requests
                         .antMatchers("/auth/login", "/docs/**", "/swagger-ui/**").permitAll()
-                        .antMatchers(HttpMethod.GET, "/accounts/**").hasAuthority(ERole.CAJERO.name()) // Cajeros pueden leer datos de cuentas
+                        .antMatchers(HttpMethod.GET, "/accounts/**").hasAnyAuthority(ERole.CAJERO.name(), ERole.DIRECTOR.name()) // Tanto Cajero como Director pueden hacer GET
                         .antMatchers("/accounts/**").hasAuthority(ERole.DIRECTOR.name()) // Directores pueden realizar todas las acciones
                         .anyRequest().authenticated()
                 )

@@ -2,7 +2,7 @@ spring:
   application:
     name: accountsService
   profiles.active: test
-  sql.init.mode: never
+  sql.init.mode: always
   devtools.restart.enabled: true
   datasource:
     url: "jdbc:h2:mem:accountsServicedb"
@@ -33,3 +33,5 @@ server:
      include-binding-errors: always
      include-stacktrace: on-param
      include-exception: false
+
+app.jwt.secret: SECRET-KEY-VALUE
