@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -52,12 +53,13 @@ public class JwtTokenUtil {
 
     // Extrae el sujeto (usuario) del token JWT
     public String getSubject(String token) {
-        return getClaims(token).getSubject();
+        return getClaims(token).get("username", String.class);
     }
 
     // Extrae el rol del usuario del token JWT
     public String getRole(String token) {
-        return getClaims(token).get("role", String.class); // Devuelve el rol como String
+        List<String> roles = getClaims(token).get("roles", List.class);  // Extraer la lista de roles
+        return roles != null && !roles.isEmpty() ? roles.get(0) : null;
     }
 
     // Extrae los claims (reclamaciones) del token JWT

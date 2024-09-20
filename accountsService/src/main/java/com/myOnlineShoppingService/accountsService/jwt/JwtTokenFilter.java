@@ -64,8 +64,13 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         String email = jwtTokenUtil.getSubject(token); // Extrae el email
         String role = jwtTokenUtil.getRole(token); // Extrae el rol
 
+        // Valida que email y role no sean null o vacíos
+        if (email == null || email.isEmpty() || role == null || role.isEmpty()) {
+            throw new IllegalArgumentException("El email o rol no pueden ser nulos o vacíos");
+        }
+
         // Crea un usuario de Spring Security con el rol y el email extraídos del token
-        UserDetails userDetails = new User(email, "",
+        UserDetails userDetails = new User(email, "psw",
                 List.of(new SimpleGrantedAuthority("ROLE_" + role)));
 
         // Crea el token de autenticación

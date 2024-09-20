@@ -31,12 +31,12 @@ public class ApplicationSecurity {
 
     @Bean
     public UserDetailsService userDetailsService() {
-        UserDetails cajero = User.withUsername("Cajero")
+        UserDetails cajero = User.withUsername("cajero@cajero.com")
                 .password(passwordEncoder().encode("cajero"))
                 .roles(ERole.CAJERO.name())
                 .build();
 
-        UserDetails director = User.withUsername("Director")
+        UserDetails director = User.withUsername("directo@director.com")
                 .password(passwordEncoder().encode("director"))
                 .roles(ERole.DIRECTOR.name())
                 .build();
