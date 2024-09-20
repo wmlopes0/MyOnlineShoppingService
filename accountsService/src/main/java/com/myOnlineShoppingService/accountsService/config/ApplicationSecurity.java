@@ -1,37 +1,48 @@
 package com.myOnlineShoppingService.accountsService.config;
 
 import com.myOnlineShoppingService.accountsService.jwt.JwtTokenFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.myOnlineShoppingService.accountsService.models.ERole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.servlet.http.HttpServletResponse;
 
 @Configuration
-@EnableMethodSecurity
+@EnableMethodSecurity(prePostEnabled = true, securedEnabled = true)
 public class ApplicationSecurity {
-    private static final Logger logger = LoggerFactory.getLogger(ApplicationSecurity.class);
-
 
     @Autowired
     private JwtTokenFilter jwtTokenFilter;
 
-    @Autowired
-    private UserDetailsService userDetailsService;
+    @Bean
+    public UserDetailsService userDetailsService() {
+        UserDetails cajero = User.withUsername("Cajero")
+                .password(passwordEncoder().encode("cajero"))
+                .roles(ERole.CAJERO.name())
+                .build();
 
+        UserDetails director = User.withUsername("Director")
+                .password(passwordEncoder().encode("director"))
+                .roles(ERole.DIRECTOR.name())
+                .build();
+
+        return new InMemoryUserDetailsManager(cajero, director);
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -39,61 +50,30 @@ public class ApplicationSecurity {
     }
 
     @Bean
-    public DaoAuthenticationProvider authProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder());
-        return authProvider;
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration authConfig
-    ) throws Exception {
-//        logger.info("Entra authenticationManager!!!!");
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
-                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-
-        // http.authenticationProvider(authProvider()); // can be commented
-
-        http
+                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests((requests) -> requests
-                                .antMatchers("/auth/login",
-                                        "/docs/**",
-                                        "/users",
-                                        "/h2-ui/**",
-                                        "/configuration/ui",
-                                        "/swagger-resources/**",
-                                        "/configuration/security",
-                                        "/swagger-ui.html",
-                                        "/webjars/**"
-                                ).permitAll() // HABILITAR ESPACIOS LIBRES
-//                        .antMatchers("/**").permitAll() // BARRA LIBRE
-//                        .antMatchers("/products/**").hasAuthority(ERole.USER.name())
-//                                .antMatchers(HttpMethod.GET, "/accounts/**").hasAnyAuthority(ERole.USER.name(), ERole.ADMIN.name())//Para acceder a productos debe ser USER
-//                                .antMatchers("/products/**").hasAnyAuthority(ERole.ADMIN.name()) //admin puede hacer de todo
-                                .antMatchers("/products/**").permitAll()
-                                .anyRequest().authenticated()
-                );
+                        .antMatchers("/auth/login", "/docs/**", "/swagger-ui/**").permitAll()
+                        .antMatchers(HttpMethod.GET, "/accounts/**").hasRole(ERole.CAJERO.name()) // Cajeros pueden leer datos de cuentas
+                        .antMatchers("/accounts/**").hasRole(ERole.DIRECTOR.name()) // Directores pueden realizar todas las acciones
+                        .anyRequest().authenticated()
+                )
+                .exceptionHandling((exception) -> exception.authenticationEntryPoint(
+                        (request, response, ex) -> {
+                            response.sendError(
+                                    HttpServletResponse.SC_UNAUTHORIZED,
+                                    ex.getMessage()
+                            );
+                        }
+                ));
 
-        http.headers(headers ->
-                headers.frameOptions(frameOptionsConfig -> frameOptionsConfig.sameOrigin())
-        );
-
-        http.exceptionHandling((exception) -> exception.authenticationEntryPoint(
-                (request, response, ex) -> {
-                    response.sendError(
-                            HttpServletResponse.SC_UNAUTHORIZED,
-                            ex.getMessage()
-                    );
-                }
-        ));
-
+        // Filtro de JWT antes de UsernamePasswordAuthenticationFilter
         http.addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
